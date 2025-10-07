@@ -11,7 +11,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                 return;
             }
 
-            fetch('http://localhost:3000/api/check-keigo', {
+            fetch('https://keigo-support.vercel.app/api/check-keigo', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: msg.text, level: level })

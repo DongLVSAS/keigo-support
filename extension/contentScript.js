@@ -129,7 +129,7 @@ setTimeout(() => {
       const level = result.keigoLevel || 'polite';
       
       // Call our API
-      fetch('http://localhost:3000/api/check-keigo', {
+      fetch('https://keigo-support.vercel.app/api/check-keigo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: foundText, level: level })
