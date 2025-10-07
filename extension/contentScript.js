@@ -149,7 +149,7 @@ setTimeout(() => {
           suggested_text: foundText.replace("こんにちは", "おはようございます") + "。よろしくお願いいたします。",
           variants: {
             polite: foundText.replace("こんにちは", "おはようございます") + "。よろしくお願いします。",
-            very_polite: foundText.replace("こんにちは", "おはようございます") + "。何卒よろしくお願いいたします。"
+            honorific: foundText.replace("こんにちは", "おはようございます") + "。何卒よろしくお願いいたします。"
           },
           explanations: ["Mock suggestion - server not available"]
         };
@@ -179,13 +179,13 @@ function showKeigoSuggestion(data, targetEditor) {
     currentLevel = 'polite';
     currentText = data.polite[0].suggestion;
     currentReason = data.polite[0].reason || "";
-  } else if (data.very_polite && data.very_polite[0]) {
-    currentLevel = 'very_polite';
-    currentText = data.very_polite[0].suggestion;
-    currentReason = data.very_polite[0].reason || "";
+  } else if (data.honorific && data.honorific[0]) {
+    currentLevel = 'honorific';
+    currentText = data.honorific[0].suggestion;
+    currentReason = data.honorific[0].reason || "";
   } else if (data.variants) {
     // Fallback to old dual format - determine level from available data
-    if (data.variants.polite && data.variants.very_polite) {
+    if (data.variants.polite && data.variants.honorific) {
       // Both available, need to check stored preference
       chrome.storage.sync.get(['keigoLevel'], (result) => {
         const storedLevel = result.keigoLevel || 'polite';
@@ -195,9 +195,9 @@ function showKeigoSuggestion(data, targetEditor) {
     } else if (data.variants.polite) {
       currentLevel = 'polite';
       currentText = data.variants.polite;
-    } else if (data.variants.very_polite) {
-      currentLevel = 'very_polite';
-      currentText = data.variants.very_polite;
+    } else if (data.variants.honorific) {
+      currentLevel = 'honorific';
+      currentText = data.variants.honorific;
     }
   } else if (data.suggested_text) {
     currentLevel = 'polite'; // default
@@ -213,10 +213,10 @@ function showKeigoSuggestion(data, targetEditor) {
   const headerText = isAlreadyPolite ? "✅ 敬語チェック結果" : "敬語の提案";
   
   // Determine section styling based on level
-  const sectionColor = currentLevel === 'very_polite' ? '#9C27B0' : '#2196F3';
-  const sectionBg = currentLevel === 'very_polite' ? '#faf4ff' : '#f0f8ff';
-  const sectionLabel = currentLevel === 'very_polite' ? '超丁寧' : '丁寧';
-  const sectionTitle = currentLevel === 'very_polite' ? '最高敬語レベル' : '普通の敬語レベル';
+  const sectionColor = currentLevel === 'honorific' ? '#9C27B0' : '#2196F3';
+  const sectionBg = currentLevel === 'honorific' ? '#faf4ff' : '#f0f8ff';
+  const sectionLabel = currentLevel === 'honorific' ? '尊敬語' : '丁寧語';
+  const sectionTitle = currentLevel === 'honorific' ? '尊敬語・謙譲語レベル' : '丁寧語レベル';
   
   popup.innerHTML = `
     <div style="font-weight: bold; margin-bottom: 15px; color: ${headerColor}; text-align: center; font-size: 16px;">
