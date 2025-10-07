@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Keigo Helper for Email",
+  "version": "0.1.0",
+  "description": "日本語メールの敬語チェックと修正をサポートする拡張機能。Gmail等で利用可能。",
+  "icons": {
+    "16": "icons/icons16.png",
+    "48": "icons/icons48.png",
+    "128": "icons/icons128.png"
+  },
+  "permissions": ["storage", "scripting", "activeTab"],
+  "host_permissions": [
+    "https://mail.google.com/mail/*",
+    "https://gmail.com/mail/*",
+    "https://www.gmail.com/mail/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://mail.google.com/mail/*",
+        "https://gmail.com/mail/*",
+        "https://www.gmail.com/mail/*"
+      ],
+      "js": ["contentScript.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

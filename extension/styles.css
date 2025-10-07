@@ -1,0 +1,19 @@
+.keigo-check-btn {
+  background: #0b57d0;
+  color: #fff;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.keigo-modal pre.keigo-suggest {
+  white-space: pre-wrap;
+  max-height: 220px;
+  overflow: auto;
+  background: #fafafa;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+}
