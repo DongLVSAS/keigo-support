@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Keigo Helper for Email",
+  "name": "Keigo Support for Email",
   "version": "0.1.0",
   "description": "日本語メールの敬語チェックと修正をサポートする拡張機能。Gmail等で利用可能。",
   "icons": {
