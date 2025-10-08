@@ -128,32 +128,44 @@ setTimeout(() => {
     chrome.storage.sync.get(['keigoLevel'], (result) => {
       const level = result.keigoLevel || 'polite';
       
-      // Call our API
-      fetch('https://keigo-support.vercel.app/api/check-keigo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: foundText, level: level })
-      })
-      .then(response => {
-        return response.json();
-      })
-      .then(data => {
+      // Send message to background script to handle API call
+      chrome.runtime.sendMessage({
+        type: 'CHECK_KEIGO',
+        text: foundText,
+        level: level
+      }, (response) => {
         restoreButton();
-        showKeigoSuggestion(data, composeAreas[0]);
-      })
-      .catch(error => {
-        console.error("API Error:", error);
-        restoreButton();
-        // Fallback to mock data
-        const mockData = {
-          suggested_text: foundText.replace("こんにちは", "おはようございます") + "。よろしくお願いいたします。",
-          variants: {
-            polite: foundText.replace("こんにちは", "おはようございます") + "。よろしくお願いします。",
-            honorific: foundText.replace("こんにちは", "おはようございます") + "。何卒よろしくお願いいたします。"
-          },
-          explanations: ["Mock suggestion - server not available"]
-        };
-        showKeigoSuggestion(mockData, composeAreas[0]);
+        
+        if (chrome.runtime.lastError) {
+          console.error("Background script error:", chrome.runtime.lastError);
+          // Fallback to mock data if background script fails
+          const mockData = {
+            suggested_text: foundText.replace("こんにちは", "おはようございます") + "。よろしくお願いいたします。",
+            variants: {
+              polite: foundText.replace("こんにちは", "おはようございます") + "。よろしくお願いします。",
+              honorific: foundText.replace("こんにちは", "おはようございます") + "。何卒よろしくお願いいたします。"
+            },
+            explanations: ["Background script error - using fallback"]
+          };
+          showKeigoSuggestion(mockData, composeAreas[0]);
+          return;
+        }
+        
+        if (response && !response.error) {
+          showKeigoSuggestion(response, composeAreas[0]);
+        } else {
+          console.error("API Error:", response?.error || "Unknown error");
+          // Fallback to mock data
+          const mockData = {
+            suggested_text: foundText.replace("こんにちは", "おはようございます") + "。よろしくお願いいたします。",
+            variants: {
+              polite: foundText.replace("こんにちは", "おはようございます") + "。よろしくお願いします。",
+              honorific: foundText.replace("こんにちは", "おはようございます") + "。何卒よろしくお願いいたします。"
+            },
+            explanations: ["API error - using fallback"]
+          };
+          showKeigoSuggestion(mockData, composeAreas[0]);
+        }
       });
     });
   });
