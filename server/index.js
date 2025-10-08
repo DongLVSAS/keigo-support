@@ -131,36 +131,6 @@ function buildPrompt(text, level) {
     }
 }
 
-
-// Test endpoint để kiểm tra API key
-app.get('/api/test', async (req, res) => {
-    try {
-        console.log('Testing API key...');
-        const r = await fetch('https://api.openai.com/v1/models', {
-            headers: {
-                'Authorization': `Bearer ${OPENAI_KEY}`
-            }
-        });
-        
-        console.log('Models API status:', r.status);
-        const data = await r.json();
-        
-        if (r.status === 200) {
-            const availableModels = data.data.map(m => m.id).filter(id => 
-                id.includes('gpt') || id.includes('davinci')
-            );
-            console.log('Available models:', availableModels);
-            res.json({ success: true, availableModels });
-        } else {
-            console.log('API key test failed:', data);
-            res.json({ success: false, error: data });
-        }
-    } catch (err) {
-        console.error('Test error:', err);
-        res.json({ success: false, error: err.message });
-    }
-});
-
 app.post('/api/check-keigo', async (req,res)=>{
     console.log('API called with body:', req.body);
     

@@ -26,7 +26,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             console.log('Making API call with:', { text, level });
 
             // Call the API
-            fetch('https://keigo-support.vercel.app/api/check-keigo', {
+            fetch('http://localhost:3000/api/check-keigo', {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
