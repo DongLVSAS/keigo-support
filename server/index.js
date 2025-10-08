@@ -35,6 +35,11 @@ function buildPolitePrompt(text) {
         3. **全ての文**が既に適切な丁寧語レベルの場合のみ「already_polite」として返してください
         4. 部分的に適切でも、改善余地があれば提案を行ってください
 
+        **重要: 元のテキストの改行・段落構造を必ず保持してください**
+        - 改行位置は変更しないでください
+        - 段落分けは元のままにしてください
+        - 空行がある場合はそのまま保持してください
+
         **丁寧語レベル (polite)**: 同僚、部下、馴染みの顧客向け - シンプルで親しみやすい
         - 基本原則: です/ます調のみを使用（過度な敬語は避ける）
         - 特徴: 自然で読みやすく、堅すぎない表現、親しみやすい
@@ -55,20 +60,22 @@ function buildPolitePrompt(text) {
             "already_polite": true,
             "level": "polite",
             "message": "この文章は既に適切な丁寧語レベルです。",
-            "original_text": "元のテキスト"
+            "original_text": "元のテキスト（改行も含む）"
         }
 
         **一つでも改善可能**な場合の形式:
         {
             "already_polite": false,
-            "suggested_text": "丁寧語レベルの推奨メール文",
+            "suggested_text": "丁寧語レベルの推奨メール文（元の改行・段落構造を保持）",
             "level": "polite",
             "explanations": [
                 {"original":"元の表現", "suggestion":"修正案", "reason":"丁寧語での修正理由"}
             ]
         }
 
-        変換対象テキスト: """${text.replace(/"/g,'\\"')}"""`;
+        変換対象テキスト: """${text.replace(/"/g,'\\"')}"""
+
+        注意: suggested_textでは、元の改行（\\n）や段落構造を絶対に変更しないでください。`;
 }
 
 function buildHonorificPrompt(text) {
@@ -81,6 +88,12 @@ function buildHonorificPrompt(text) {
         2. **一つでも**改善可能な文があれば、改善案を提供してください
         3. **全ての文**が既に適切な尊敬語・謙譲語レベルの場合のみ「already_polite」として返してください
         4. 部分的に適切でも、改善余地があれば提案を行ってください
+
+        **重要: 元のテキストの改行・段落構造を必ず保持してください**
+        - 改行位置は変更しないでください
+        - 段落分けは元のままにしてください
+        - 空行がある場合はそのまま保持してください
+        - メールの構造（件名、宛先、署名等）は維持してください
 
         **尊敬語・謙譲語レベル (honorific)**: 上司、重要顧客、社外向け - 正式で丁寧
         - 基本原則: です/ます調 + 尊敬語・謙譲語の適切な使用
@@ -104,20 +117,22 @@ function buildHonorificPrompt(text) {
             "already_polite": true,
             "level": "honorific",
             "message": "この文章は既に適切な尊敬語・謙譲語レベルです。",
-            "original_text": "元のテキスト"
+            "original_text": "元のテキスト（改行も含む）"
         }
 
         **一つでも改善可能**な場合の形式:
         {
             "already_polite": false,
-            "suggested_text": "尊敬語・謙譲語レベルの推奨メール文",
+            "suggested_text": "尊敬語・謙譲語レベルの推奨メール文（元の改行・段落構造を保持）",
             "level": "honorific",
             "explanations": [
                 {"original":"元の表現", "suggestion":"修正案", "reason":"尊敬語・謙譲語での修正理由"}
             ]
         }
 
-        変換対象テキスト: """${text.replace(/"/g,'\\"')}"""`;
+        変換対象テキスト: """${text.replace(/"/g,'\\"')}"""
+
+        注意: suggested_textでは、元の改行（\\n）や段落構造を絶対に変更しないでください。メールの読みやすさのため、改行位置は元のテキストと同じにしてください。`;
 }
 
 function buildPrompt(text, level) {
@@ -228,24 +243,36 @@ app.post('/api/check-keigo', async (req,res)=>{
                 return res.json(alreadyPoliteResponse);
             }
             
-            // Fallback improvement suggestions
+            // Fallback improvement suggestions - preserve line breaks
             let fallbackSuggestion = text;
             if (level === 'polite') {
-                // polite level: basic です/ます + simple keigo
+                // polite level: basic です/ます + simple keigo (preserve formatting)
                 fallbackSuggestion = text
                     .replace(/だ([。！？\s]|$)/g, "です$1")
                     .replace(/である([。！？\s]|$)/g, "です$1")
                     .replace(/おはよう/g, "おはようございます")
-                    .replace(/ありがとう([。！？\s]|$)/g, "ありがとうございます$1")
-                    + (text.match(/[。！？]$/) ? "" : "。よろしくお願いします。");
+                    .replace(/ありがとう([。！？\s]|$)/g, "ありがとうございます$1");
+                
+                // Add closing greeting only if doesn't end with punctuation
+                if (!text.match(/[。！？]$/)) {
+                    // Check if it ends with newline, preserve it
+                    const endsWithNewline = text.match(/\n$/);
+                    fallbackSuggestion += endsWithNewline ? "。\nよろしくお願いします。" : "。よろしくお願いします。";
+                }
             } else {
-                // honorific level: です/ます + 尊敬語・謙譲語
+                // honorific level: です/ます + 尊敬語・謙譲語 (preserve formatting)
                 fallbackSuggestion = text
                     .replace(/だ([。！？\s]|$)/g, "でございます$1")
                     .replace(/である([。！？\s]|$)/g, "でございます$1")
                     .replace(/おはよう/g, "おはようございます。いつもお世話になっております")
-                    .replace(/ありがとう([。！？\s]|$)/g, "ありがとうございます。心より感謝申し上げます$1")
-                    + (text.match(/[。！？]$/) ? "" : "。何卒よろしくお願いいたします。");
+                    .replace(/ありがとう([。！？\s]|$)/g, "ありがとうございます。心より感謝申し上げます$1");
+                
+                // Add closing greeting only if doesn't end with punctuation
+                if (!text.match(/[。！？]$/)) {
+                    // Check if it ends with newline, preserve it
+                    const endsWithNewline = text.match(/\n$/);
+                    fallbackSuggestion += endsWithNewline ? "。\n何卒よろしくお願いいたします。" : "。何卒よろしくお願いいたします。";
+                }
             }
             
             const fallbackResponse = {
